@@ -14,7 +14,20 @@ function IDk() {
   const streamRef = useRef(null);
   
   const BACKEND_URL = 'http://localhost:5000' ;
-  
+  const [videoPath] = useState('./src/assets/hello.mp4'); // Change this to your video path
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Format seconds into mm:ss format
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
+  };
+
+  // Update the current time whenever the video's playback time changes
+  const handleTimeUpdate = (e) => {
+    setCurrentTime(e.target.currentTime);
+  };
   // Check backend health
   const checkBackendStatus = async () => {
     try {
@@ -131,11 +144,21 @@ function IDk() {
       <div className="top-section">
         {/* Left box: Video for Learning (static placeholder) */}
         <div className="box learning-box">
-          <h2>Video for Learning</h2>
-          <div className="learning-video-placeholder">
-            <div className="video-timestamp">0:00</div>
-          </div>
+      <h2>Video for Learning</h2>
+      <div className="learning-video-placeholder">
+        <video 
+          src={videoPath} 
+          controls 
+          onTimeUpdate={handleTimeUpdate} 
+          style={{ width: '100%', borderRadius: '8px' }}
+        >
+          Your browser does not support the video tag.
+        </video>
+        <div className="video-timestamp">
+          {formatTime(currentTime)}
         </div>
+      </div>
+    </div>
         
         {/* Right box: Video for Recognition (webcam feed) */}
         <div className="box recognition-box">
