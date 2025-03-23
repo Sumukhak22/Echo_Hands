@@ -13,28 +13,29 @@ function IDk() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   
-  const BACKEND_URL = 'http://localhost:5000' ;
-  const [videoPath] = useState('./src/assets/hello.mp4'); // Change this to your video path
+  const BACKEND_URL = 'http://localhost:5000';
+  const [videoPath] = useState('./src/assets/family.mp4'); // Change this to your video path
   const [currentTime, setCurrentTime] = useState(0);
 
   // Format seconds into mm:ss format
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
+    // const secs = Math.floor(seconds % 60);
+    // return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
   };
 
   // Update the current time whenever the video's playback time changes
   const handleTimeUpdate = (e) => {
     setCurrentTime(e.target.currentTime);
   };
+
   // Check backend health
   const checkBackendStatus = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/health`);
       const data = await response.json();
       setBackendStatus(
-        data.status === 'ok' 
+        data.status === 'ok'
           ? (data.model_loaded ? 'Connected (Model Loaded)' : 'Connected (No Model)')
           : 'Error'
       );
@@ -105,10 +106,8 @@ function IDk() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/recognize`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image: imageData }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
       });
       
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -142,23 +141,21 @@ function IDk() {
     <div className="new-app-container">
       {/* Top section with two boxes */}
       <div className="top-section">
-        {/* Left box: Video for Learning (static placeholder) */}
+        {/* Left box: Video for Learning */}
         <div className="box learning-box">
-      <h2>Video for Learning</h2>
-      <div className="learning-video-placeholder">
-        <video 
-          src={videoPath} 
-          controls 
-          onTimeUpdate={handleTimeUpdate} 
-          style={{ width: '100%', borderRadius: '8px' }}
-        >
-          Your browser does not support the video tag.
-        </video>
-        <div className="video-timestamp">
-          {formatTime(currentTime)}
+          <h2>Video for Learning</h2>
+          <div className="learning-video-placeholder">
+            <video 
+              src={videoPath} 
+              controls 
+              onTimeUpdate={handleTimeUpdate} 
+              style={{ width: '100%', borderRadius: '8px' }}
+            >
+              Your browser does not support the video tag.
+            </video>
+            <div className="video-timestamp">{formatTime(currentTime)}</div>
+          </div>
         </div>
-      </div>
-    </div>
         
         {/* Right box: Video for Recognition (webcam feed) */}
         <div className="box recognition-box">
@@ -190,9 +187,9 @@ function IDk() {
         </div>
       </div>
       
-      {/* Welcome section */}
+      {/* Static welcome section */}
       <div className="welcome-section">
-        Welcome
+        Word: Family
       </div>
       
       {/* Bottom buttons */}
@@ -201,13 +198,13 @@ function IDk() {
         <button className="action-btn">Continue</button>
       </div>
       
-      {/* Results panel (kept logic the same) */}
+      {/* Results panel with conditional display */}
       <div className="results-panel">
         <div className="backend-status">
           Backend Status: <span>{backendStatus}</span>
         </div>
         <div className="detected-sign">
-          <strong>Detected Sign:</strong> {detectedSign}
+          <strong>Detected Sign:</strong> {detectedSign.toLowerCase() === "family" ? "Family" : `${detectedSign} - Try again`}
         </div>
         <div className="confidence">
           <strong>Confidence:</strong> {confidence.toFixed(1)}%
