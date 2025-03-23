@@ -10,14 +10,24 @@ const LoginSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Mark as logged in and redirect to home
+  const handleLoginSuccess = () => {
+    sessionStorage.setItem("isLoggedIn", "true"); // Mark as logged in
+    window.location.href = "/"; // Redirect to home after login
+  };
+
   const handleAuth = async () => {
     if (!username || !password || (!isLogin && !email)) {
       alert("Please fill all fields");
       return;
     }
 
-    const endpoint = isLogin ? "http://localhost:5000/login" : "http://localhost:5000/signup";
-    const body = isLogin ? { username, password } : { username, email, password };
+    const endpoint = isLogin
+      ? "http://localhost:5000/login"
+      : "http://localhost:5000/signup";
+    const body = isLogin
+      ? { username, password }
+      : { username, email, password };
 
     try {
       const response = await fetch(endpoint, {
@@ -27,7 +37,13 @@ const LoginSignup = () => {
       });
 
       const data = await response.json();
-      alert(data.message || data.error);
+
+      if (response.ok) {
+        alert(data.message || "Success!");
+        handleLoginSuccess(); // Redirect after successful login/signup
+      } else {
+        alert(data.error || "Something went wrong!");
+      }
     } catch (error) {
       console.error("Error during authentication:", error);
       alert("Something went wrong. Please try again later.");
@@ -41,37 +57,39 @@ const LoginSignup = () => {
           <h2>{isLogin ? "Login" : "Sign Up"}</h2>
           <div className="input-box">
             <FaUser className="icon" />
-            <input 
-              type="text" 
-              placeholder="Username" 
-              value={username} 
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required 
+              required
             />
           </div>
           {!isLogin && (
             <div className="input-box">
               <MdEmail className="icon" />
-              <input 
-                type="email" 
-                placeholder="Email" 
-                value={email} 
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required 
+                required
               />
             </div>
           )}
           <div className="input-box">
             <RiLockPasswordFill className="icon" />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              value={password} 
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
             />
           </div>
-          <button className="btn" onClick={handleAuth}>{isLogin ? "Login" : "Sign Up"}</button>
+          <button className="btn" onClick={handleAuth}>
+            {isLogin ? "Login" : "Sign Up"}
+          </button>
           {isLogin && (
             <div className="forgot-password">
               Lost Password? <span>Click Here!</span>
