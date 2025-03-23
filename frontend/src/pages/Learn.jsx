@@ -15,6 +15,22 @@ function IDk() {
   
   const BACKEND_URL = 'http://localhost:5000' ;
   
+  // Check backend health
+  const checkBackendStatus = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/health`);
+      const data = await response.json();
+      setBackendStatus(
+        data.status === 'ok' 
+          ? (data.model_loaded ? 'Connected (Model Loaded)' : 'Connected (No Model)')
+          : 'Error'
+      );
+    } catch (err) {
+      console.error("Backend connection error:", err);
+      setBackendStatus('Disconnected');
+    }
+  };
+
   // Initialize webcam
   useEffect(() => {
     checkBackendStatus();
@@ -45,20 +61,6 @@ function IDk() {
       }
     };
   }, []);
-  
-  // Check backend health
-  const checkBackendStatus = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/health`);
-      const data = await response.json();
-      setBackendStatus(data.status === 'ok' ? 
-        (data.model_loaded ? 'Connected (Model Loaded)' : 'Connected (No Model)') : 
-        'Error');
-    } catch (err) {
-      console.error("Backend connection error:", err);
-      setBackendStatus('Disconnected');
-    }
-  };
   
   // Toggle recognition
   const toggleRecognition = () => {
@@ -115,29 +117,29 @@ function IDk() {
   // Process frames at regular intervals when recognition is active
   useEffect(() => {
     let intervalId;
-    
     if (isRecognizing) {
-      intervalId = setInterval(processFrame, 100); // 10 frames per second
+      intervalId = setInterval(processFrame, 100); // ~10 frames per second
     }
-    
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
   }, [isRecognizing]);
   
   return (
-    <div className="app-container">
-      <header>
-        <h1>Sign Language Recognition</h1>
-        <div className="backend-status">
-          Backend Status: <span className={backendStatus.includes('Connected') ? 'connected' : 'disconnected'}>
-            {backendStatus}
-          </span>
+    <div className="new-app-container">
+      {/* Top section with two boxes */}
+      <div className="top-section">
+        {/* Left box: Video for Learning (static placeholder) */}
+        <div className="box learning-box">
+          <h2>Video for Learning</h2>
+          <div className="learning-video-placeholder">
+            <div className="video-timestamp">0:00</div>
+          </div>
         </div>
-      </header>
-      
-      <div className="main-content">
-        <div className="video-container">
+        
+        {/* Right box: Video for Recognition (webcam feed) */}
+        <div className="box recognition-box">
+          <h2>Video for Recognition</h2>
           <div className="video-wrapper">
             <video 
               ref={videoRef} 
@@ -154,37 +156,40 @@ function IDk() {
             )}
             <canvas ref={canvasRef} className="hidden-canvas" />
           </div>
-        </div>
-        
-        <div className="controls-panel">
-          <button 
-            className={`toggle-btn ${isRecognizing ? 'active' : ''}`}
-            onClick={toggleRecognition}
-          >
-            {isRecognizing ? 'Stop Recognition' : 'Start Recognition'}
-          </button>
-          
-          <div className="results-panel">
-            <h2>Recognition Results</h2>
-            <div className="detected-sign">
-              <h3>Detected Sign:</h3>
-              <div className="sign-value">{detectedSign}</div>
-            </div>
-            
-            <div className="confidence">
-              <h3>Confidence:</h3>
-              <div className="progress-bar-container">
-                <div 
-                  className="progress-bar" 
-                  style={{ width: `${confidence}%` }}
-                ></div>
-              </div>
-              <div className="confidence-value">{confidence.toFixed(1)}%</div>
-            </div>
-            
-            <div className="debug-info">{debugInfo}</div>
+          <div className="btn-group">
+            <button 
+              className={`toggle-btn ${isRecognizing ? 'active' : ''}`}
+              onClick={toggleRecognition}
+            >
+              {isRecognizing ? 'Stop Webcam' : 'Start Webcam'}
+            </button>
           </div>
         </div>
+      </div>
+      
+      {/* Welcome section */}
+      <div className="welcome-section">
+        Welcome
+      </div>
+      
+      {/* Bottom buttons */}
+      <div className="bottom-buttons">
+        <button className="action-btn">Replay</button>
+        <button className="action-btn">Continue</button>
+      </div>
+      
+      {/* Results panel (kept logic the same) */}
+      <div className="results-panel">
+        <div className="backend-status">
+          Backend Status: <span>{backendStatus}</span>
+        </div>
+        <div className="detected-sign">
+          <strong>Detected Sign:</strong> {detectedSign}
+        </div>
+        <div className="confidence">
+          <strong>Confidence:</strong> {confidence.toFixed(1)}%
+        </div>
+        <div className="debug-info">{debugInfo}</div>
       </div>
     </div>
   );

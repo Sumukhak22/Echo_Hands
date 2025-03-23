@@ -144,7 +144,7 @@ const HomePage = () => {
       <header className="header">
         <div className="logo">
           <h1>
-            SignWave<span className="highlight">Learn</span>
+            Echo<span className="highlight">Hands</span>
           </h1>
         </div>
         <nav className="navigation">

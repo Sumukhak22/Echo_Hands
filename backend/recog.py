@@ -4,15 +4,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 import mediapipe as mp
-import time
 import pickle
 import base64
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import threading
-import queue
 
-# Import your SignRecognizer class
 class SignRecognizer:
     def __init__(self, model_path=None, label_encoder_path=None, sequence_length=3, fps=15, 
                  confidence_threshold=30, detection_threshold=15):
@@ -125,7 +119,6 @@ class SignRecognizer:
         
         # Draw left hand landmarks with additional mesh lines
         if results.left_hand_landmarks:
-            # Draw the standard connections
             self.mp_drawing.draw_landmarks(
                 display_frame,
                 results.left_hand_landmarks,
@@ -133,11 +126,10 @@ class SignRecognizer:
                 self.mp_drawing_styles.get_default_hand_landmarks_style(),
                 self.mp_drawing_styles.get_default_hand_connections_style()
             )
-            # Draw additional connections to create a more detailed mesh
-            for i in range(5):  # For each finger
-                base = i * 4 + 1  # Base index for each finger (excluding wrist)
-                for j in range(base, base + 3):  # Connect adjacent points in the finger
-                    if i < 4:  # Avoid connecting pinky to a non-existent next finger
+            for i in range(5):
+                base = i * 4 + 1
+                for j in range(base, base + 3):
+                    if i < 4:
                         cv2.line(
                             display_frame,
                             tuple(np.multiply(
@@ -153,7 +145,6 @@ class SignRecognizer:
         
         # Draw right hand landmarks with additional mesh lines
         if results.right_hand_landmarks:
-            # Draw the standard connections
             self.mp_drawing.draw_landmarks(
                 display_frame,
                 results.right_hand_landmarks,
@@ -161,11 +152,10 @@ class SignRecognizer:
                 self.mp_drawing_styles.get_default_hand_landmarks_style(),
                 self.mp_drawing_styles.get_default_hand_connections_style()
             )
-            # Draw additional connections to create a more detailed mesh
-            for i in range(5):  # For each finger
-                base = i * 4 + 1  # Base index for each finger (excluding wrist)
-                for j in range(base, base + 3):  # Connect adjacent points in the finger
-                    if i < 4:  # Avoid connecting pinky to a non-existent next finger
+            for i in range(5):
+                base = i * 4 + 1
+                for j in range(base, base + 3):
+                    if i < 4:
                         cv2.line(
                             display_frame,
                             tuple(np.multiply(
@@ -179,7 +169,7 @@ class SignRecognizer:
                             (0, 255, 0), 1
                         )
         
-        # Draw face landmarks with tesselation style instead of contours
+        # Draw face landmarks with tesselation style
         if results.face_landmarks:
             self.mp_drawing.draw_landmarks(
                 display_frame,
@@ -191,19 +181,16 @@ class SignRecognizer:
             
         # Extract landmarks and check for valid hand data
         landmarks = self.extract_landmarks(results)
-        has_landmarks = any(abs(x) > 0.001 for x in landmarks[:126])  # Check hand landmarks
+        has_landmarks = any(abs(x) > 0.001 for x in landmarks[:126])
         
-        # Process for recognition
         recognition_result = None
         if has_landmarks:
             self.sequence_buffer.append(landmarks)
             self.no_detection_counter = 0
             
-            # Maintain buffer size
             if len(self.sequence_buffer) > self.frames_per_sequence:
                 self.sequence_buffer.pop(0)
                 
-            # Perform prediction if buffer is full
             if len(self.sequence_buffer) == self.frames_per_sequence:
                 try:
                     X = np.array([self.sequence_buffer])
@@ -212,7 +199,6 @@ class SignRecognizer:
                     confidence = pred[pred_idx] * 100
                     debug_info = f"Buffer size: {len(self.sequence_buffer)}, Confidence: {confidence:.1f}%"
                     
-                    # Return recognition result if confidence is high enough
                     if confidence > self.confidence_threshold:
                         sign = self.label_encoder.inverse_transform([pred_idx])[0]
                         self.current_sign = sign
@@ -231,7 +217,6 @@ class SignRecognizer:
         else:
             self.no_detection_counter += 1
             
-        # Reset if no detection for too long
         if self.no_detection_counter > self.detection_threshold:
             self.current_sign = "No sign detected"
             self.confidence = 0
@@ -240,67 +225,3 @@ class SignRecognizer:
             recognition_result = {'sign': "No sign detected", 'confidence': 0}
             
         return display_frame, recognition_result
-
-# Create Flask app
-app = Flask(__name__)
-CORS(app)  # Enable CORS for cross-origin requests
-
-# Initialize the recognizer
-data_dir = "sign_language_data"
-model_path = os.path.join(data_dir, "sign_model.h5")
-label_encoder_path = os.path.join(data_dir, "label_encoder.pkl")
-recognizer = SignRecognizer(model_path, label_encoder_path)
-
-# Start recognition
-recognizer.start_recognition()
-
-@app.route('/api/recognize', methods=['POST'])
-def recognize_sign():
-    if 'image' not in request.json:
-        return jsonify({'error': 'No image provided'}), 400
-    
-    try:
-        # Decode base64 image
-        image_data = request.json['image'].split(',')[1] if ',' in request.json['image'] else request.json['image']
-        image_bytes = base64.b64decode(image_data)
-        np_arr = np.frombuffer(image_bytes, np.uint8)
-        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-        
-        # Flip frame for natural interaction
-        frame = cv2.flip(frame, 1)
-        
-        # Process frame for recognition
-        display_frame, result = recognizer.process_frame(frame)
-        
-        # Encode the processed frame to return to client
-        _, buffer = cv2.imencode('.jpg', display_frame)
-        processed_image = base64.b64encode(buffer).decode('utf-8')
-        
-        response = {
-            'processed_image': f'data:image/jpeg;base64,{processed_image}'
-        }
-        
-        # Add recognition results if available
-        if result:
-            if 'sign' in result:
-                response['sign'] = result['sign']
-                response['confidence'] = float(result['confidence'])
-            if 'debug' in result:
-                response['debug'] = result['debug']
-        else:
-            response['sign'] = "No sign detected"
-            response['confidence'] = 0.0
-            
-        return jsonify(response)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok', 'model_loaded': recognizer.model is not None})
-
-if __name__ == '__main__':
-    # Ensure data directory exists
-    os.makedirs(data_dir, exist_ok=True)
-    app.run(host='0.0.0.0', port=5000, debug=False)
