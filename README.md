@@ -30,17 +30,17 @@ Sign Language Learning Platform
   4. Access the platform at `http://localhost:5000`.
   
   Usage Instructions
-    1. Select your preferred sign language from the available options.
-    2. Follow the guided tutorials and complete practice exercises.
-    3. Receive real-time feedback on your gestures.
+    1. Select your preferred sign language from the available options.                                                                                                      
+    2. Follow the guided tutorials and complete practice exercises.                                                                                                      
+    3. Receive real-time feedback on your gestures.                                                                                                                         
     4. Track your progress and earn rewards.
   
   Contributing
     Contributions are welcome! To contribute:
-      1. Fork the repository.
-      2. Create a new branch (git checkout -b feature-branch).
-      3. Commit your changes (git commit -m 'Add new feature').
-      4. Push to your branch (git push origin feature-branch).
+      1. Fork the repository.                                                                                                                                               
+      2. Create a new branch (git checkout -b feature-branch).                                                                                                                                                           
+      3. Commit your changes (git commit -m 'Add new feature').                                                                                                                  
+      4. Push to your branch (git push origin feature-branch).                                                                                                               
       5. Submit a pull request.
   
   License
