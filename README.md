@@ -4,16 +4,16 @@ Sign Language Learning Platform
     The Sign Language Learning Platform is an AI-powered solution designed to make sign language learning accessible, interactive, and effective. By using computer     vision and machine learning, the platform offers real-time feedback on sign gestures, helping users learn accurately and efficiently.
 
   Features
-    - Real-Time Gesture Recognition: Provides instant feedback using AI-powered computer vision.
-    - Personalized Learning Path: Tracks user progress and offers tailored lessons.
-    - Interactive Tutorials: Step-by-step lessons with visual guidance and practice sessions.
+    - Real-Time Gesture Recognition: Provides instant feedback using AI-powered computer vision.                                                                      
+    - Personalized Learning Path: Tracks user progress and offers tailored lessons.                                                                                       
+    - Interactive Tutorials: Step-by-step lessons with visual guidance and practice sessions.                                                                                
     - Gamified Experience: Earn points, badges, and rewards for progress.
   
-  Technologies Used
-    - Frontend: React
-    - Backend: Flask
-    - AI/ML: TensorFlow, MediaPipe
-    - Database: MongoDB
+  Technologies Used                                                               
+    - Frontend: React                                                                                                                                                        
+    - Backend: Flask                                                                                                                                                  
+    - AI/ML: TensorFlow, MediaPipe                                                                                                                                            
+    - Database: MongoDB                                                                                                                                               
     - Version Control: Git & GitHub
   
   Installation and Setup
